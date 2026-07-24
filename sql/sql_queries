@@ -1,0 +1,280 @@
+-- CREATE TABLE vendas (
+--     id INT PRIMARY KEY IDENTITY(1,1),
+--     vendedor VARCHAR(50),
+--     produto VARCHAR(50),
+--     categoria VARCHAR(50),
+--     valor_venda DECIMAL(10, 2),
+--     data_venda DATE
+-- );
+
+-- INSERT INTO vendas (vendedor, produto, categoria, valor_venda, data_venda) VALUES 
+-- ('Ana', 'Notebook', 'Eletrônicos', 3200.00, '2026-01-05'),
+-- ('Ana', 'Mouse', 'Eletrônicos', 80.00, '2026-01-12'),
+-- ('Ana', 'Teclado', 'Eletrônicos', 150.00, '2026-02-03'),
+-- ('Bruno', 'Monitor', 'Eletrônicos', 900.00, '2026-01-08'),
+-- ('Bruno', 'Notebook', 'Eletrônicos', 3500.00, '2026-01-20'),
+-- ('Bruno', 'Cadeira', 'Móveis', 650.00, '2026-02-10'),
+-- ('Carla', 'Mesa', 'Móveis', 800.00, '2026-01-15'),
+-- ('Carla', 'Cadeira', 'Móveis', 620.00, '2026-01-28'),
+-- ('Carla', 'Monitor', 'Eletrônicos', 950.00, '2026-02-05'),
+-- ('Bruno', 'Mouse', 'Eletrônicos', 75.00, '2026-02-14'),
+-- ('Ana', 'Monitor', 'Eletrônicos', 920.00, '2026-02-18'),
+-- ('Carla', 'Notebook', 'Eletrônicos', 3300.00, '2026-02-22');
+
+-- DROP TABLE vendas;
+
+-- UPDATE vendas SET valor_venda = 900.00 WHERE produto = 'Monitor' AND vendedor = 'Ana';
+
+-- SELECT 
+--     categoria,
+--     produto,
+--     valor_venda,
+--     ROW_NUMBER() OVER(PARTITION BY categoria ORDER BY valor_venda DESC) as row_num,
+--     RANK() OVER (PARTITION BY categoria ORDER BY valor_venda DESC) as ranking,
+--     DENSE_RANK() OVER (PARTITION BY categoria ORDER BY valor_venda DESC) as dense_ranking
+--     FROM vendas
+--     WHERE categoria = 'Eletrônicos';
+
+
+-- SELECT
+--     vendedor,
+--     data_venda,
+--     valor_venda,
+--     LAG(valor_venda) OVER (PARTITION BY vendedor ORDER BY data_venda) AS venda_anterior
+--     FROM vendas
+--     ORDER BY vendedor, data_venda;
+
+-- SELECT
+--     vendedor,
+--     data_venda,
+--     valor_venda,
+--     ISNULL(LAG(valor_venda) OVER (PARTITION BY vendedor ORDER BY data_venda), 0) AS venda_anterior,
+--     valor_venda - ISNULL(LAG(valor_venda) OVER (PARTITION BY vendedor ORDER BY data_venda),0) AS diferenca_venda
+--     FROM vendas
+--     ORDER BY vendedor, data_venda;
+
+-- SELECT
+--     vendedor,
+--     data_venda,
+--     valor_venda,
+--     SUM(valor_venda) OVER (PARTITION BY vendedor ORDER BY data_venda) AS total_acumulado
+--     FROM vendas
+--     ORDER BY vendedor, data_venda;
+
+-- SELECT
+--     vendedor,
+--     data_venda,
+--     valor_venda,
+--     RANK() OVER (PARTITION BY vendedor ORDER BY valor_venda DESC) AS ranking,
+--     SUM(valor_venda) OVER (PARTITION BY vendedor ORDER BY data_venda) AS total_acumulado
+--     FROM vendas
+--     ORDER BY vendedor, ranking;
+
+-- SELECT 
+--     vendedor,
+--     data_venda,
+--     valor_venda,
+--     AVG(valor_venda) OVER (
+--         PARTITION BY vendedor 
+--         ORDER BY data_venda 
+--         ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+--     -- ) AS media_movel_3
+-- FROM vendas
+-- ORDER BY vendedor, data_venda;
+
+-- SELECT
+--     vendedor,
+--     produto,
+--     valor_venda,
+--     NTILE(4) OVER (ORDER BY valor_venda DESC) AS quartil
+-- FROM vendas;
+
+-- SELECT 
+--     vendedor,
+--     valor_venda,
+--     RANK() OVER (PARTITION BY vendedor ORDER BY valor_venda DESC) AS ranking
+-- FROM vendas
+-- WHERE ranking = 1;
+
+-- WITH ranking_vendas AS(
+--     SELECT
+--         vendedor,
+--         valor_venda,
+--         RANK() OVER (PARTITION BY vendedor ORDER BY valor_venda DESC) AS ranking
+--         FROM vendas
+-- )
+-- SELECT * FROM ranking_vendas
+-- WHERE ranking = 1;
+
+-- WITH ranking_vendas AS(
+--     SELECT
+--         vendedor,
+--         valor_venda,
+--         data_venda,
+--         RANK() OVER (PARTITION BY vendedor ORDER BY data_venda ASC) AS ranking_data
+--         FROM vendas
+-- )
+-- SELECT * FROM ranking_vendas
+-- WHERE ranking_data = 1;
+
+-- WITH resumo_vendedor AS (
+--     SELECT 
+--         vendedor, 
+--         SUM(valor_venda) AS total_vendido,
+--         COUNT(*) AS qtd_vendas
+--     FROM vendas
+--     GROUP BY vendedor
+-- ),
+-- media_geral AS (
+--     SELECT AVG(total_vendido) AS media
+--     FROM resumo_vendedor
+-- )
+-- SELECT 
+--     r.vendedor,
+--     r.total_vendido,
+--     r.qtd_vendas,
+--     m.media AS media_geral_vendedores
+-- FROM resumo_vendedor r
+-- CROSS JOIN media_geral m
+-- WHERE r.total_vendido > m.media;
+
+-- CREATE TABLE funcionarios (
+--     id INT PRIMARY KEY,
+--     nome VARCHAR(50),
+--     gerente_id INT
+-- );
+
+-- INSERT INTO funcionarios VALUES
+-- (1, 'Diretora Paula', NULL),
+-- (2, 'Gerente Ricardo', 1),
+-- (3, 'Gerente Fernanda', 1),
+-- (4, 'Ana', 2),
+-- (5, 'Bruno', 2),
+-- (6, 'Carla', 3);
+
+-- WITH hierarquia AS (
+--     SELECT 
+--         id, 
+--         nome, 
+--         gerente_id, 
+--         0 AS nivel
+--     FROM funcionarios
+--     WHERE gerente_id IS NULL
+
+--     UNION ALL
+
+--     SELECT 
+--         f.id, 
+--         f.nome, 
+--         f.gerente_id, 
+--         h.nivel + 1
+--     FROM funcionarios f
+--     INNER JOIN hierarquia h ON f.gerente_id = h.id
+-- )
+-- SELECT * FROM hierarquia
+-- ORDER BY nivel, nome;
+
+-- SET STATISTICS IO ON;
+
+-- SELECT * FROM vendas WHERE vendedor = 'Ana';
+
+-- CREATE INDEX idx_vendedor ON vendas(vendedor);
+
+-- SET STATISTICS IO ON;
+-- SELECT * FROM vendas WHERE vendedor = 'Ana';
+
+-- Gera ~50.000 linhas aleatórias pra forçar o otimizador a considerar o índice
+-- INSERT INTO vendas (vendedor, produto, categoria, valor_venda, data_venda)
+-- SELECT TOP 50000
+--     CASE ABS(CHECKSUM(NEWID())) % 5 
+--         WHEN 0 THEN 'Ana' WHEN 1 THEN 'Bruno' WHEN 2 THEN 'Carla' 
+--         WHEN 3 THEN 'Diego' ELSE 'Elisa' END,
+--     'Produto Teste',
+--     'Eletrônicos',
+--     ABS(CHECKSUM(NEWID())) % 5000,
+--     DATEADD(DAY, -(ABS(CHECKSUM(NEWID())) % 365), GETDATE())
+-- FROM sys.all_objects a CROSS JOIN sys.all_objects b;
+
+-- CREATE INDEX idx_valor ON vendas(valor_venda);
+
+-- SET STATISTICS IO ON;
+-- SELECT id, vendedor, valor_venda 
+-- FROM vendas 
+-- WHERE valor_venda = 4999;
+
+-- DELETE FROM vendas WHERE vendedor IN ('Diego', 'Elisa') OR produto = 'Produto Teste';
+
+-- SELECT COUNT(*) FROM vendas;
+
+-- CREATE TABLE dim_vendedor (
+--     vendedor_id INT PRIMARY KEY IDENTITY (1,1),
+--     nome VARCHAR(50) UNIQUE
+-- );
+
+-- INSERT INTO dim_vendedor (nome)
+-- SELECT DISTINCT vendedor FROM vendas;
+
+-- SELECT * FROM dim_vendedor;
+
+-- CREATE TABLE dim_produto (
+--     produto_id INT PRIMARY KEY IDENTITY(1,1),
+--     nome_produto VARCHAR(50),
+--     categoria VARCHAR(50)
+-- );
+
+-- INSERT INTO dim_produto (nome_produto, categoria)
+-- SELECT DISTINCT produto, categoria FROM vendas;
+
+-- SELECT * FROM dim_produto;
+
+-- CREATE TABLE dim_tempo (
+--     data_id DATE PRIMARY KEY,
+--     ano INT,
+--     mes INT,
+--     nome_mes VARCHAR (20),
+--     trimestre INT
+-- );
+
+-- INSERT INTO dim_tempo (data_id, ano, mes, nome_mes, trimestre)
+-- SELECT DISTINCT 
+--     data_venda,
+--     YEAR(data_venda),
+--     MONTH(data_venda),
+--     DATENAME(MONTH, data_venda),
+--     DATEPART(QUARTER, data_venda)
+-- FROM vendas;
+
+-- SELECT * FROM dim_vendedor;
+-- SELECT * FROM dim_produto;
+-- SELECT * FROM dim_tempo;
+
+-- CREATE TABLE fato_vendas (
+--     fato_id INT PRIMARY KEY IDENTITY(1,1),
+--     vendedor_id INT FOREIGN KEY REFERENCES dim_vendedor(vendedor_id),
+--     produto_id INT FOREIGN KEY REFERENCES dim_produto(produto_id),
+--     data_id DATE FOREIGN KEY REFERENCES dim_tempo(data_id),
+--     valor_venda DECIMAL (10,2)
+-- );
+
+-- INSERT INTO fato_vendas (vendedor_id, produto_id, data_id, valor_venda)
+-- SELECT 
+--     dv.vendedor_id,
+--     dp.produto_id,
+--     v.data_venda,
+--     v.valor_venda
+-- FROM vendas v
+-- JOIN dim_vendedor dv ON v.vendedor = dv.nome
+-- JOIN dim_produto dp ON v.produto = dp.nome_produto AND v.categoria = dp.categoria;
+
+SELECT
+    dv.nome AS vendedor,
+    dp.nome_produto AS produto,
+    dp.categoria,
+    dt.nome_mes,
+    dt.trimestre,
+    f.valor_venda
+FROM fato_vendas f
+JOIN dim_vendedor dv ON f.vendedor_id = dv.vendedor_id
+JOIN dim_produto dp ON f.produto_id = dp.produto_id
+JOIN dim_tempo dt ON f.data_id = dt.data_id
+ORDER BY dv.nome, dt.data_id;
