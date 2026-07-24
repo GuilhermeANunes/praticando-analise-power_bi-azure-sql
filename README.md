@@ -2,7 +2,7 @@
 
 Projeto ponta a ponta: modelagem dimensional em Azure SQL Database, construção de um modelo Power BI com relacionamentos corretos, medidas DAX e segurança em nível de linha (RLS), publicado no Power BI Service.
 
-🔗 **[Ver relatório publicado no Power BI Service]([https://app.powerbi.com/groups/me/reports/71614ce1-2cd4-4af3-8a79-a0a12b3efea5/0db36fc545e7de11cbdb?redirectedFromSignup=1&experience=power-bi])**
+🔗 **[Ver relatório publicado no Power BI Service](https://app.powerbi.com/groups/me/reports/71614ce1-2cd4-4af3-8a79-a0a12b3efea5/0db36fc545e7de11cbdb?redirectedFromSignup=1&experience=power-bi)**
 
 ## Stack utilizada
 - **Banco de dados:** Azure SQL Database (T-SQL)
